@@ -7,7 +7,7 @@ import copy
 from enum import Enum
 sys.path.append(r'../lib/')
 sys.path.append(r'../http/')
-sys.path.append(r"D:\Users\admin\PycharmProjects\PyTestFrame\interface\http")
+sys.path.append(r"D:\Users\Administrator\PycharmProjects\pySuitTest\http")
 from csvUtil import csvutil as PrepareDataUtil
 from configUtil import configParser
 from httpRequest import http_request
@@ -95,6 +95,7 @@ class ApiTestSuit(unittest.TestCase):
             self.currentContex.httpClient = self.httpClient
             self.beforeHttpTest(context=self.currentContex)
             self.runHttpTest(context=self.currentContex)
+            self.checkResult(context=context)
             self.afterHttpTest(context=self.currentContex)
             # try:
             #     self.beforeHttpTest(context=self.currentContex)
@@ -166,8 +167,6 @@ class ApiTestSuit(unittest.TestCase):
             pass
             # raise RuntimeError("httpType do not exit..." + httpType)
         context.setHttpResult(httpResult)
-
-        self.checkResult(context=context)
         logger.info("执行完毕....")
 
     def doLogin(self, Context):
@@ -201,7 +200,16 @@ class ApiTestSuit(unittest.TestCase):
     #     logger.info("PASSS")
 
     def checkResult(self, context):
-        pass
+        self.checkResponseCode(context=context)
+        self.checkJson(context=context)
+
+    def checkResponseCode(self, context):
+        responseCode = context.getHttpResult().responeCode()
+        prepareCode = context.prepareData
+        if responseCode == prepareCode:
+            self.assertTrue(True, "返回状态码匹配成功" + str(responseCode))
+        else:
+            self.assertTrue(False, "返回状态码不匹配，期望 %s, 实际返回 %s" %(str(prepareCode), str(responseCode)))
 
     def checkDb(self, context):
         pass
@@ -291,7 +299,7 @@ class runContext(object):
 class Context(object):
     def __init__(self, PrepareDataObj, ConfigDataObj):
         self.prepareData = PrepareDataObj
-        self.configDataObj = ConfigDataObj
+        self.configData = ConfigDataObj
         # *************   当前用例的http配置  ****************
         #             Http类型，头部，body，url部分
         self.httpType = PrepareDataObj["httpType"]
@@ -316,6 +324,13 @@ class Context(object):
         # ************ 结果返回配置   ******************
         self.httpResult = httpResult()
         #
+
+    def getPrepareData(self):
+        return self.prepareData
+
+    def getConfigData(self):
+        return self.configData
+
     def getBaseUrl(self):
         return self.baseUrl
     

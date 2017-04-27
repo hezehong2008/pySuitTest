@@ -296,7 +296,7 @@ class uintTest(unittest.TestCase):
         self.loginUrl = "https://yun.kujiale.com/api/login"
         self.username = "hezehong1012@163.com"
         self.password = "123456"
-        self.request = httpRequest()
+        self.request = http_request()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.DEBUG)
 
