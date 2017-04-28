@@ -97,6 +97,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
+        logger.debug("requestGet...url: %s , heaers %s" % (url, headers))
         respone = requests.get(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -137,6 +138,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
+        logger.debug("requestDelete...url: %s , entity: %s, heaers %s" % (url, entity, headers))
         respone = requests.delete(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -159,6 +161,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
+        logger.debug("requestPut...url: %s , entity: %s, heaers %s" % (url, entity, headers))
         respone = requests.put(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -176,10 +179,11 @@ class http_request(object):
         pass
 
     def doLogin(self, url, username, password, **kwargs):
-        result = http_request()
+        result = None
         if "kujiale" in url:
             _dict = {"email": username, "password": password, "account": username}
             result = self.requestWithPost(url=url, entity=_dict)
+
         self.cookies = result.getCookieJar()
         return result
 

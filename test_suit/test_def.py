@@ -7,6 +7,7 @@ import os
 import traceback
 import copy
 from enum import Enum
+
 sys.path.append(r'../lib/')
 sys.path.append(r'../http/')
 sys.path.append(r"D:\Users\Administrator\PycharmProjects\pySuitTest\http")
