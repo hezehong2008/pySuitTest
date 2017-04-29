@@ -5,6 +5,7 @@
 # ...         print ', '.join(row)
 import csv
 import os
+import logging
 # "caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath", "dbInsert.xxx", "paramUrl.xxx", "paramBody.xxx", "paramHeader.xxxx", "verifyReCode", "jsonVerify.xxxx", "dbVerify.xxxx", "dbClean.xxxx"
 
 #　［"caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath"，"verifyReCode"，"dbInsert.xxx", "paramUrl.xxx", "paramBody.xxx", "paramHeader.xxxx", "jsonVerify.xxxx", "dbVerify.xxxx", "dbClean.xxxx"
@@ -36,6 +37,7 @@ class csvutil(object):
         self.csv_append_list = CSV_APPEND_LIST
         self.csv_base_list = CSV_BASE_LIST
         self.csv_list = csvReader(csv_path)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def getCaseId(self, csv_list=None, index=0):
             """
@@ -267,18 +269,28 @@ class csvutil(object):
 
         :param csv_list:
         :param index:
-        :return:
+        :return: str or None
         """
         if not csv_list:
             csv_list = self.csv_list
-
+        isExit = False
         if "paramBody" not in csv_list[0].keys():
-            raise RuntimeError("paramBody param not in csvFile...." + str(csv_list[0].keys()))
+            paramBodyDict = {}
+            for item in csv_list[0].keys():
+                if "parambody" in item.lower():
+                    isExit = True
+                    paramBodyDict[item.split(".")[1]] = csv_list[index][item]
+            if not isExit:
+                self.logger.warning("paramBody param not in csvFile...." + str(csv_list[0].keys()))
+                return None
+            return paramBodyDict
+            # raise RuntimeWarning("paramBody param not in csvFile...." + str(csv_list[0].keys()))
         else:
             _str = csv_list[index]["paramBody"]
             _parent = os.path.dirname(self.csv_path)
+            _str = _str.replace(" ", "")
             if "@path=" in _str:
-                path = _str.split("@path")[1]
+                path = _str.split("@path=")[1]
                 _path = os.path.join(_parent, path)
                 with open(_path, 'r+', encoding='UTF-8') as f:
                     _str_ = f.read()

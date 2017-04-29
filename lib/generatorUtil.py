@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
-from lib.csvUtil import csvutil
+from csvUtil import csvutil
 import logging
 import os
 import platform
 import sys
 import copy
-
 logger = logging.getLogger("scriptGenerator")
 logger.setLevel(logging.DEBUG)
 NORMAL_TEST = "NormalTest"
 EXCEPTION_TEST = "ExceptionTest"
-CONFIG_FILE = "../config.properties"
+CONFIG_FILE = "..\config.properties"
 CSV_FILE = "testure"
 ApiFunctonNamePrefix = "test"
 delemiter = "/"
-ScriptSamplePath = "etc/scriptSample.txt"
-ConfigSamplePath = "etc/config.properties"
+ScriptSamplePath = "..\etc\scriptSample.txt"
 if "Windows" in platform.system():
     delemiter = "\\"
 elif "Linux" in platform.system():
@@ -30,6 +28,7 @@ _script_info = {
 }
 
 
+
 class scriptGenerator(object):
     def __init__(self):
         self.topLevel = 2
@@ -37,13 +36,12 @@ class scriptGenerator(object):
         self.script_info_exception = {}
         self.script_info_temp = {
             "TopLevel": "{exTopLevel}",
-            "ApiClassName": "{exApiClassName}",
+            "exApiClassName": "{exexApiClassName}",
             "CsvFilePath": "{exCsvFilePath}",
             "ApiTestFunction": "{exApiTestFunction}",
             "ConfigPath": "{exConfigPath}"
         }
-        self.script_text = open(ScriptSamplePath, "r", encoding="utf-8").readlines()
-        self.config_text = open(ConfigSamplePath, "r", encoding="utf-8").readlines()
+        self.script_text = str(open(ScriptSamplePath, "r", encoding="utf-8").read().encode("gbk"))
 
     def buildScript(self, serverPath="ddss/aa", functionName="ApiGetFloorPlan", buildType="all"):
         """
@@ -54,14 +52,14 @@ class scriptGenerator(object):
         """
         script_info_normal = {
             "TopLevel": "{exTopLevel}",
-            "ApiClassName": "{exApiClassName}",
+            "exApiClassName": "{exexApiClassName}",
             "CsvFilePath": "{exCsvFilePath}",
             "ApiTestFunction": "{exApiTestFunction}",
             "ConfigPath": "{exConfigPath}"
         }
         script_info_exception = {
             "TopLevel": "{exTopLevel}",
-            "ApiClassName": "{exApiClassName}",
+            "exApiClassName": "{exexApiClassName}",
             "CsvFilePath": "{exCsvFilePath}",
             "ApiTestFunction": "{exApiTestFunction}",
             "ConfigPath": "{exConfigPath}"
@@ -81,8 +79,8 @@ class scriptGenerator(object):
             _dir = "test_case/" + serverPath
             script_info_normal["TopLevel"] = "../../"
             script_info_exception["TopLevel"] = "../../"
-            script_info_normal["ConfigPath"] = "../config.properties"
-            script_info_exception["ConfigPath"] = "../config.properties"
+            script_info_normal["ConfigPath"] = "config.properties"
+            script_info_exception["ConfigPath"] = "config.properties"
         elif topLevel == 2:
             if "\\" in serverPath:
                 serverPath.replace("\\", "/")
@@ -91,26 +89,26 @@ class scriptGenerator(object):
                 os.makedirs(_dir)
 
             script_info_normal["TopLevel"] = "../../../"
-            script_info_normal["ConfigPath"] = "../config.properties"
+            script_info_normal["ConfigPath"] = "..\config.properties"
 
             script_info_exception["TopLevel"] = "../../../"
-            script_info_exception["ConfigPath"] = "../config.properties"
+            script_info_exception["ConfigPath"] = "..\config.properties"
 
-        script_info_normal["ApiClassName"] = functionName+ NORMAL_TEST
-        script_info_exception["ApiClassName"] = functionName + EXCEPTION_TEST
-        script_info_normal["ApiTestFunction"] = ApiFunctonNamePrefix + functionName+ "Normal"
-        script_info_exception["ApiTestFunction"] = ApiFunctonNamePrefix + functionName + "Exception"
+        script_info_normal["exApiClassName"] = functionName.title()
+        script_info_exception["exApiClassName"] = functionName.title()
+        script_info_normal["ApiTestFunction"] = ApiFunctonNamePrefix + functionName.title() + "Normal"
+        script_info_exception["ApiTestFunction"] = ApiFunctonNamePrefix + functionName.title() + "Exception"
         script_info_normal["CsvFilePath"] = CSV_FILE + "/" + functionName + NORMAL_TEST + ".csv"
         script_info_exception["CsvFilePath"] = CSV_FILE + "/" + functionName + EXCEPTION_TEST + ".csv"
         self.script_info_normal = script_info_normal
-        self.script_info_exception = script_info_exception
-
+        self.script_info_exceptions = script_info_exception
+        
         script_file_normal = _dir + "/" + functionName + NORMAL_TEST + ".py"
         script_file_exception = _dir + "/" + functionName + EXCEPTION_TEST + ".py"
         config_file_path = os.path.join(_dir, CONFIG_FILE)
         csv_file_path_normal = _dir + "/" + CSV_FILE + "/" + functionName + NORMAL_TEST + ".csv"
         csv_file_path_exception = _dir + "/" + CSV_FILE + "/" + functionName + EXCEPTION_TEST + ".csv"
-
+        
         logging.debug("生成配置文件:" + os.path.realpath(config_file_path))
         self.buildConfigFile(filePath=config_file_path)
 
@@ -146,17 +144,13 @@ class scriptGenerator(object):
             logging.warning("script file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
+            fp = open(os.path.realpath(filePath), "w")
 
     def buildScriptAll(self, filePath=None):
         os.path.dirname(filePath)
 
     def buildNormalScript(self, filePath=None):
-        """
 
-        :param filePath:
-        :return:
-        """
         logger.info("生成正常测试脚本..." + os.path.realpath(filePath))
         _dir = os.path.dirname(filePath)
         if not os.path.exists(_dir):
@@ -165,17 +159,11 @@ class scriptGenerator(object):
             logging.warning("script file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
-            s = copy.deepcopy(self.script_text)
-            # s = s.encode("GBK")
-            for i in range(len(s)):
-                for key in self.script_info_temp.keys():
-                    # s.replace(self.script_info_temp[key], self.script_info_normal[key])
-                    if self.script_info_temp[key] in s[i]:
-                        s[i] = s[i].replace(self.script_info_temp[key], self.script_info_normal[key])
-            for i in range(len(s)):
-                fp.write(s[i])
-            # fp.write(s)
+            fp = open(os.path.realpath(filePath), "w")
+            s = str(copy.deepcopy(self.script_text))
+            for key in self.script_info_temp.keys():
+                s.replace(self.script_info_temp[key], self.script_info_normal[key])
+            fp.write(s)
             fp.close()
 
     def buildConfigFile(self, filePath=None):
@@ -187,13 +175,7 @@ class scriptGenerator(object):
             logging.warning("script file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
-            s = copy.deepcopy(self.config_text)
-            # s = s.encode("GBK")
-            for i in range(len(s)):
-                fp.write(s[i])
-            # fp.write(s)
-            fp.close()
+            fp = open(os.path.realpath(filePath), "w")
 
     def buildExceptionScript(self, filePath=None):
         logger.info("生成异常测试脚本..." + os.path.realpath(filePath))
@@ -204,19 +186,8 @@ class scriptGenerator(object):
             logging.warning("script file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
-            s = copy.deepcopy(self.script_text)
-            # s = s.encode("GBK")
-            for i in range(len(s)):
-                for key in self.script_info_temp.keys():
-                    # s.replace(self.script_info_temp[key], self.script_info_normal[key])
-                    if self.script_info_temp[key] in s[i]:
-                        s[i] = s[i].replace(self.script_info_temp[key], self.script_info_exception[key])
-            for i in range(len(s)):
-                fp.write(s[i])
-            # fp.write(s)
-            fp.close()
+            fp = open(os.path.realpath(filePath), "w")
 
 if __name__ == "__main__":
     generator = scriptGenerator()
-    generator.buildScript(serverPath="apiGetFloopPlan", functionName="ApiGetFloorPlan")
+    generator.buildScript(serverPath="tt/ApiGetFloopPlan", functionName="apiGetFloorPlan4")

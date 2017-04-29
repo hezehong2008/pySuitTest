@@ -66,7 +66,7 @@ class http_request(object):
         # request.get_method = lambda: 'POST'
         # if self.check_json_format(entity):
         #     pass
-        logger.debug("requestPost...url: %s , entity: %s, heaers %s" % (url, entity, headers))
+        logger.debug("requestPost...url: %s , entity: %s, headers %s" % (url, entity, headers))
         respone = requests.post(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
         result.setResponeMsg(respone.text)
         result.setCookieJar(respone.cookies)
@@ -97,7 +97,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
-        logger.debug("requestGet...url: %s , heaers %s" % (url, headers))
+        logger.debug("requestGet...url: %s , headers %s" % (url, headers))
         respone = requests.get(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -138,7 +138,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
-        logger.debug("requestDelete...url: %s , entity: %s, heaers %s" % (url, entity, headers))
+        logger.debug("requestDelete...url: %s , entity: %s, headers %s" % (url, entity, headers))
         respone = requests.delete(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -161,7 +161,7 @@ class http_request(object):
             cookies = self.cookies
         if isLogin:
             cookies = self.doLogin(username=self.username, password=self.password, url=self.loginUrl).getCookieJar()
-        logger.debug("requestPut...url: %s , entity: %s, heaers %s" % (url, entity, headers))
+        logger.debug("requestPut...url: %s , entity: %s, headers %s" % (url, entity, headers))
         respone = requests.put(url=url, data=entity, headers=headers, timeout=SET_TIME_OUT, cookies=cookies)
 
         result.setResponeMsg(respone.text)
@@ -231,6 +231,7 @@ class httpResult(object):
     def setResponeMsg(self, responeMsg):
         self.responeMsg = responeMsg
 
+
     def getResponeJson(self):
         """
 
@@ -266,6 +267,21 @@ class httpResult(object):
     # @type_limit(int, int)
     def getResponeType(self):
         return self.responeType
+
+    def check_json_format(self, raw_msg):
+        """
+        用于判断一个字符串是否符合Json格式
+        :param self:
+        :return:
+        """
+        if isinstance(raw_msg, str):  # 首先判断变量是否为字符串
+            try:
+                json.loads(raw_msg, encoding='utf-8')
+            except ValueError:
+                return False
+            return True
+        else:
+            return False
 
     @staticmethod
     def type_limit(*typeLimit, **returnType):

@@ -3,9 +3,8 @@
 import unittest
 import sys
 import os
-sys.path.append(r'../../../test_suit/')
-sys.path.append(r'../../../lib/')
-from test_def import ApiTestSuit
+sys.path.append(r'../../../')
+from test_suit.test_def import ApiTestSuit
 try:
     from PyLogger import logging
 except:
@@ -20,8 +19,8 @@ class GetFloorPlanTest(ApiTestSuit):
         self.script_dir = os.getcwd()
         self.script_file = __file__
         self.sub_class_name = GetFloorPlanTest.__name__
-        self.testure_path = r"testure\ApiGetFloorPlanNormal.csv"
-        self.config_path = r'''config.properties'''
+        self.testure_path = r"testure/ApiPostFloorPlanNormarlTest.csv"
+        self.config_path = r'''../config.properties'''
         self.logger = logging.getLogger(self.__class__.__name__)
         self.initConfig()
         ################################################################################
@@ -34,12 +33,13 @@ class GetFloorPlanTest(ApiTestSuit):
 
         """
         self.logger.info("before HttpTest in this..............")
+        # context.getHttpSendUrl
+        self.logger.debug(context.getHttpSendUrl())
+
 
     def testGetFloorPlan(self):
         self.logger.info("********************************* Begin test **********************************")
-        # self.logger.info(self.script_dir)
         self.startTest(runContext=self.runContext)
-        # self.logger.info("tttttttttttttttttttttt")
 
     def afterHttpTest(self, context):
         self.logger.info("After HttpTest in this...............")

@@ -7,17 +7,21 @@ import os
 import traceback
 import copy
 from enum import Enum
-
-sys.path.append(r'../lib/')
-sys.path.append(r'../http/')
-sys.path.append(r"D:\Users\Administrator\PycharmProjects\pySuitTest\http")
-from csvUtil import csvutil as PrepareDataUtil
-from configUtil import configParser
-from httpRequest import http_request
-from httpRequest import httpResult
+sys.path.append("..")
 try:
-    import PyLogger as pylogger
-    from PyLogger import logging
+    from httplib.httpRequest import http_request
+    from lib.csvUtil import csvutil as PrepareDataUtil
+    from lib.configUtil import configParser
+except ImportError:
+    sys.path.append("..")
+    from httplib.httpRequest import http_request
+    from lib.csvUtil import csvutil as PrepareDataUtil
+    from lib.configUtil import configParser
+# from httpRequest import http_request
+try:
+    import lib.PyLogger as pylogger
+    from lib.PyLogger import logging
+
 except:
     import logging
 logger = logging.getLogger("ApiTestSuit")
@@ -37,28 +41,33 @@ class ApiTestSuit(unittest.TestCase):
         """
         """
         PySuit
-        1.技术方案选型
+        1.技术方案选型 (python + unittest)
         2.python，java
-        3.后端、前端
+        3.后端、前端 django + react
         4.设计思路、思想
         5.数据结构设计
         6.流程图设计
         """
         """
             runContext ---
-
+                        configData(global)
+                        prepareDataList(list obj for prepareData)
+                        currentContext(Context obj) ---
+                                                        prepareData
+                                                        httpResult
+                                                        configData
+                                                        httpClient
+                        httpResultList(list obj for httpResult)
         """
-
         self.setLogger()
-
         logger.step(self.step)
         logger.step("初始化上下文对象....")
         logger.debug("创建全局runContext对象.....")
-
         self.runContext = runContext()
         if os.name == "nt":
             pass
-        _path = os.path.join(os.path.dirname(self.script_dir), self.config_path)
+        # os.path.dirname(self.script_dir)
+        _path = os.path.join(os.path.abspath(self.script_dir), self.config_path)
         # print(os.path.dirname(self.script_dir))
         logger.debug("初始化配置数据,生成configData对象..." + _path)
         self.runContext.configData = ConfigData(configPath=_path)
@@ -75,7 +84,7 @@ class ApiTestSuit(unittest.TestCase):
         logger.debug("加载csv数据文件成功...." + str(self.runContext.prepareDataList[0]) + "...")
         # self.runContext.prepareDataList = PrepareData(csv_file_path=_path, index=0)
         logger.debug("创建全局runContext对象成功.....包含csv数据、配置数据信息...")
-        logger.debug("创建运行的http_request对象.....httpClient")
+        logger.debug("创建运行的http_request对象.....httpClient\n")
         self.httpClient = http_request()
 
     def getScriptServerName(self, file_path):
@@ -85,9 +94,13 @@ class ApiTestSuit(unittest.TestCase):
     def getScriptFileName(self, file_path):
         return os.path.basename(file_path)
 
-    def startTest(self , runContext):
+    def startTest(self, runContext):
+        """
+
+            :param runContext:
+            :return:
+        """
         logger.debug("start run test...." + self.__class__.__name__)
-        # self.beforeClassTest(Context=runContext)
         logger.debug("")
         result = True
         logger.step("开始运行测试用例.....共有" + str(self.caseNum) + "个测试用例")
@@ -95,10 +108,14 @@ class ApiTestSuit(unittest.TestCase):
             logger.step("开始运行第 " + str(i+1) + " 个测试用例")
 
             self.currentContex = Context(runContext.prepareDataList[i], runContext.configData)
+            isRun = self.currentContex.getPrepareData().getIsRun()
+            if not isRun:
+                logger.debug("当前第 %s 个用例设置为不运行.... 跳过..." % str(i+1))
+                continue
             self.currentContex.httpClient = self.httpClient
             self.beforeHttpTest(context=self.currentContex)
             self.runHttpTest(context=self.currentContex)
-            self.checkResult(context=context)
+            self.checkResult(context=self.currentContex)
             self.afterHttpTest(context=self.currentContex)
             # try:
             #     self.beforeHttpTest(context=self.currentContex)
@@ -110,7 +127,7 @@ class ApiTestSuit(unittest.TestCase):
             #     logger.error(traceback.print_exc(Exception))
             # finally:
             runContext.currentCaseNum += 1
-
+            logger.step("运行第 %s 个用例完毕....\n" % (i+1))
 
         self.afterClassTest(context=Context)
 
@@ -118,28 +135,36 @@ class ApiTestSuit(unittest.TestCase):
 
     def beforeHttpTest(self, context):
         pass
-        # print(sys._getframe().f_code.co_name)
 
     def afterHttpTest(self, context):
         pass
-        # print(sys._getframe().f_code.co_name)
 
     def beforeClassTest(self, context):
         pass
-        # print(sys._getframe().f_code.co_name)
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
     def afterClassTest(self, context):
         pass
-        # print(sys._getframe().f_code.co_name)
 
     def runHttpTest(self, context):
+        id = context.prepareData.getCaseId()
+        desc = context.prepareData.getCaseDesc()
+        logger.debug("运行用例id:" + str(id))
+        logger.debug("运行用例description:" + str(desc))
         # print(Context.isNeedLogin)
         if not context.isNeedLoginFirst():
             logger.info("当前用例不需要登录....跳过登录")
         else:
             # logger.debug()
             logger.debug("开始登录....")
-            _str = str(self.doLogin(Context))
+            _str = str(self.doLogin(context=context))
             logger.debug("登录成功....返回:" + _str)
         logger.info("开始执行http方法....")
 
@@ -172,7 +197,7 @@ class ApiTestSuit(unittest.TestCase):
         context.setHttpResult(httpResult)
         logger.info("执行完毕....")
 
-    def doLogin(self, Context):
+    def doLogin(self, context):
         pass
         #_str = Context.
 
@@ -199,20 +224,19 @@ class ApiTestSuit(unittest.TestCase):
     def getRelativePath(self, fatherPath, subPath):
         pass
 
-    # def runTest(self):
-    #     logger.info("PASSS")
-
     def checkResult(self, context):
         self.checkResponseCode(context=context)
         self.checkJson(context=context)
 
     def checkResponseCode(self, context):
-        responseCode = context.getHttpResult().responeCode()
-        prepareCode = context.prepareData
+        responseCode = context.getHttpResult().getResponeCode()
+        prepareCode = context.prepareData.getExceptRetCode()
         if responseCode == prepareCode:
+            logger.info("状态码对比成功...." + str(responseCode))
             self.assertTrue(True, "返回状态码匹配成功" + str(responseCode))
         else:
-            self.assertTrue(False, "返回状态码不匹配，期望 %s, 实际返回 %s" %(str(prepareCode), str(responseCode)))
+            logger.error("状态码对比失败....返回:" + str(responseCode))
+            self.assertTrue(False, "返回状态码不匹配，期望 %s, 实际返回 %s" % (str(prepareCode), str(responseCode)))
 
     def checkDb(self, context):
         pass
@@ -325,7 +349,7 @@ class Context(object):
         self.baseUrl = ConfigDataObj["reomveUrl"]
         self.loginUrl = ConfigDataObj["loginUrl"]
         # ************ 结果返回配置   ******************
-        self.httpResult = httpResult()
+        self.httpResult = None
         #
 
     def getPrepareData(self):
@@ -475,7 +499,6 @@ class PrepareData(object):
         # 1.对比是否包含json的key
         # 2.对比包含json 的 key--value
         # 3.对比正则表达式匹配json的 key -- value 字段
-
         # /**** http param ******/
         self.strSendText = None
         # / **url, headers={} , entity=None
@@ -493,8 +516,106 @@ class PrepareData(object):
         self._prepareDataUtil = PrepareDataUtil(csv_file_path)
         self.caseNum = len(self._prepareDataUtil.csv_list)
         self.initParam(csv_file_path=csv_file_path, index=index)
-
      # ***************************  not finish ***************************************
+
+    def getExceptRetCode(self):
+        return self.exceptRetCode
+
+    def setExceptRetCode(self, exceptRetCode):
+        self.exceptRetCode = exceptRetCode
+
+    def getCaseId(self):
+        return self.caseId
+
+    def setCaseId(self, caseId):
+        self.caseId = caseId
+
+    def getCaseDesc(self):
+        return self.caseDesc
+
+    def setCaseDesc(self, caseDesc):
+        self.caseDesc = caseDesc
+
+    def getHttpType(self):
+        return self.httpType
+
+    def setHttpType(self, httpType):
+        self.httpType = httpType
+
+    def getApiPath(self):
+        return self.apiPath
+
+    def setApiPath(self, apiPath):
+        self.apiPath = apiPath
+
+    def getMapSendParam(self):
+        return self.mapSendParam
+
+    def setMapSendParam(self, mapSendParam):
+        self.mapSendParam = mapSendParam
+
+    def getMapPostUrlParam(self):
+        return self.mapPostUrlParam
+
+    def setMapPostUrlParam(self, mapPostUrlParam):
+        self.mapPostUrlParam = mapPostUrlParam
+
+    def getMapHttpHeadParam(self):
+        return self.mapHttpHeadParam
+
+    def setMapHttpHeadParam(self, mapHttpHeadParam):
+        self.mapHttpHeadParam = mapHttpHeadParam
+
+    def getRetMapJsonAssert(self):
+        return self.retMapJsonAssert
+
+    def setRetMapJsonAssert(self, retMapJsonAssert):
+        self.retMapJsonAssert = retMapJsonAssert
+
+    def getMapUserParam(self):
+        return self.mapUserParam
+
+    def setMapUserParam(self, mapUserParam):
+        self.mapUserParam = mapUserParam
+
+    def getVerfiyJson(self):
+        return self.verfiyJson
+
+    def setVerfiyJson(self, verfiyJson):
+        self.verfiyJson = verfiyJson
+
+    def getCompareJsonType(self):
+        return self.compareJsonType
+
+    def setCompareJsonType(self, compareJsonType):
+        self.compareJsonType = compareJsonType
+
+    def getMapInsertDb(self):
+        return self.mapInsertDb
+
+    def setMapInsertDb(self, mapInsertDb):
+        self.mapInsertDb = mapInsertDb
+
+    def getRetMapDbAssert(self):
+        return self.retMapDbAssert
+
+    def setRetMapDbAssert(self, retMapDbAssert):
+        self.retMapDbAssert = retMapDbAssert
+
+    def getIsNeedLogin(self):
+        return self.isNeedLogin
+
+    def setIsNeedLogin(self, isNeedLogin):
+        self.isNeedLogin = isNeedLogin
+
+    def setIsRun(self, isRun):
+        self.isRun = isRun
+
+    def getIsRun(self):
+        return self.isRun
+
+    def getPriority(self):
+        return self.priority
 
     def initParam(self, csv_file_path="", index=0):
         """
@@ -514,7 +635,7 @@ class PrepareData(object):
         self.priority = _prepareData.getPriority(index=index)
         self.httpType = _prepareData.getHttpType(index=index)
         self.apiPath = _prepareData.getApiPath(index=index)
-        self.exceptRetCode = _prepareData.getVerifyReCode(index=index)
+        self.exceptRetCode = int(_prepareData.getVerifyReCode(index=index))
         self.mapSendParam = _prepareData.getMapSendParam(index=index)
 
         self.mapUserParam = _prepareData.getMapUserParam(index=index)

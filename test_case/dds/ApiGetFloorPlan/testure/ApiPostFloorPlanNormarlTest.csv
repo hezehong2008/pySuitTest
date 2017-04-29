@@ -1,0 +1,3 @@
+caseId,caseDesc,isRun,priority,httpType,apiPath,paramUrl.yyy,verifyReCode,jsonVerify.name,paramUrl.yyy3,paramHeader.request,paramBody.xxxee,paramBody
+No1,ApiGetRoomTypesEncrypted,true,,post,d/api/c/roomtypes?,test_yyy,200,aa,cdef,test_request,x,@path=postSample.txt
+No1,ApiGetRoomTypesEncrypted3333,true,,post,d/api/c/roomtypes?,defg,200,aa,ffef,1,,
