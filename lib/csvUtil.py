@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*
 # >>> import csv
 # >>> with open('eggs.csv', 'rb') as csvfile:
 # ...     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
@@ -316,7 +318,6 @@ class csvutil(object):
         return self.getMapHttpHeadParam(csv_list=csv_list, index=index)
     
 
-
 def csvReader(filePath):
     """
 
@@ -324,7 +325,7 @@ def csvReader(filePath):
     :return:  a list for csv
     """
     with open(filePath, 'r') as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = csv.DictReader(csvfile, quoting=csv.QUOTE_ALL, dialect="excel")
         rows = [row for row in reader]
         # print(spamreader[1], spamreader.__len__)
         # _list = []
@@ -342,8 +343,12 @@ def csvReader(filePath):
     # print(rows[0].keys())
     return rows
 
-def csvWriter(filePath, comment):
-    pass
+
+def csvWriterBase(filePath, quoting=csv.QUOTE_ALL):
+    csvfile = open(filePath, 'w', encoding="utf-8")
+    writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL, dialect="excel")
+    writer.writerow(CSV_BASE_LIST)
+    csvfile.close()
 
 
 

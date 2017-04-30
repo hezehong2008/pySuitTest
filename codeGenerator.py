@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
-from lib.csvUtil import csvutil
+import lib.csvUtil as csvutil
 import logging
 import os
 import platform
@@ -132,10 +132,11 @@ class scriptGenerator(object):
         if not os.path.exists(_dir):
             os.makedirs(_dir)
         if os.path.exists(filePath):
-            logging.warning("script file is exits..." + os.path.realpath(filePath))
+            logging.warning("csv normal file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), "w")
+            # fp = open(os.path.realpath(filePath), "w")
+            csvutil.csvWriterBase(filePath=os.path.abspath(filePath))
 
     def buildCsvFileException(self, filePath=None):
         logger.info("生成异常测试脚本CSV驱动数据文件..." + os.path.realpath(filePath))
@@ -143,10 +144,11 @@ class scriptGenerator(object):
         if not os.path.exists(_dir):
             os.makedirs(_dir)
         if os.path.exists(filePath):
-            logging.warning("script file is exits..." + os.path.realpath(filePath))
+            logging.warning("csv exception file is exits..." + os.path.realpath(filePath))
             return None
         else:
-            fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
+            # fp = open(os.path.realpath(filePath), encoding="utf-8", mode="w")
+            csvutil.csvWriterBase(filePath=os.path.abspath(filePath))
 
     def buildScriptAll(self, filePath=None):
         os.path.dirname(filePath)
