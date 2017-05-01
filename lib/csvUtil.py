@@ -187,18 +187,27 @@ class csvutil(object):
 
         :param csv_list:
         :param index:
-        :return:
+        :return: None or "" or str
         """
         if not csv_list:
             csv_list = self.csv_list
-        if "verfiyJson" not in csv_list[0].keys():
-            return None
+        isExit = False
+        if "verifyJson" not in csv_list[0].keys():
+            verfiyJsonDict = {}
+            for item in csv_list[0].keys():
+                if "verfiyJson" in item.lower():
+                    isExit = True
+                    verfiyJsonDict[item.split(".")[1]] = csv_list[index][item]
+            if not isExit:
+                self.logger.warning("verifyJson Dict param not in csvFile...." + str(csv_list[0].keys()))
+                return None
+            return str(verfiyJsonDict)
             # raise RuntimeWarning("verfiyJson param not in csvFile...." + str(csv_list[0].keys()))
         else:
-            _str = csv_list[index]["verfiyJson"]
+            _str = csv_list[index]["verifyJson"]
             _parent = os.path.dirname(self.csv_path)
             if "@path=" in _str:
-                path = _str.split("@path")[1]
+                path = _str.split("@path=")[1]
                 _path = os.path.join(_parent, path)
                 with open(_path, 'r+', encoding='UTF-8') as f:
                     _str_ = f.read()
@@ -327,20 +336,6 @@ def csvReader(filePath):
     with open(filePath, 'r') as csvfile:
         reader = csv.DictReader(csvfile, quoting=csv.QUOTE_ALL, dialect="excel")
         rows = [row for row in reader]
-        # print(spamreader[1], spamreader.__len__)
-        # _list = []
-        # i = 0
-        # rows = [row for row in spamreader]
-        # for row in spamreader:
-        #
-        #     _list.append(row)
-        #     if i != 0:
-        #         _dict = {}
-        #         for item in range(_list[0]):
-        #             _dict[_list] =
-        #     i += 1
-        #     print(row, type(row))
-    # print(rows[0].keys())
     return rows
 
 

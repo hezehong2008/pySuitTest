@@ -231,7 +231,6 @@ class httpResult(object):
     def setResponeMsg(self, responeMsg):
         self.responeMsg = responeMsg
 
-
     def getResponeJson(self):
         """
 

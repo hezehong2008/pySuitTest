@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
 import unittest
 import sys
 import time
@@ -12,6 +13,7 @@ try:
     from httplib.httpRequest import http_request
     from lib.csvUtil import csvutil as PrepareDataUtil
     from lib.configUtil import configParser
+    from lib.jsonUtil import *
 except ImportError:
     sys.path.append("..")
     from httplib.httpRequest import http_request
@@ -81,6 +83,9 @@ class ApiTestSuit(unittest.TestCase):
         self.runContext.prepareDataList = []
         for i in range(self.caseNum):
             self.runContext.prepareDataList.append(PrepareData(csv_file_path=_path, index=i))
+        if not self.runContext.prepareDataList:
+            logger.warn("csv数据为空....退出")
+            return None
         logger.debug("加载csv数据文件成功...." + str(self.runContext.prepareDataList[0]) + "...")
         # self.runContext.prepareDataList = PrepareData(csv_file_path=_path, index=0)
         logger.debug("创建全局runContext对象成功.....包含csv数据、配置数据信息...")
@@ -112,11 +117,19 @@ class ApiTestSuit(unittest.TestCase):
             if not isRun:
                 logger.debug("当前第 %s 个用例设置为不运行.... 跳过..." % str(i+1))
                 continue
-            self.currentContex.httpClient = self.httpClient
-            self.beforeHttpTest(context=self.currentContex)
-            self.runHttpTest(context=self.currentContex)
-            self.checkResult(context=self.currentContex)
-            self.afterHttpTest(context=self.currentContex)
+            try:
+                self.currentContex.httpClient = self.httpClient
+                self.beforeHttpTest(context=self.currentContex)
+                self.runHttpTest(context=self.currentContex)
+                self.checkResult(context=self.currentContex)
+                self.afterHttpTest(context=self.currentContex)
+            except Exception:
+                result = False
+                logger.warning("TestCase error....")
+                logger.error(traceback.print_exc(Exception))
+            finally:
+                runContext.currentCaseNum += 1
+                logger.step("运行第 %s 个用例完毕....\n" % (i + 1))
             # try:
             #     self.beforeHttpTest(context=self.currentContex)
             #     self.runHttpTest(context=self.currentContex)
@@ -126,8 +139,8 @@ class ApiTestSuit(unittest.TestCase):
             #     logger.warning("TestCase error....")
             #     logger.error(traceback.print_exc(Exception))
             # finally:
-            runContext.currentCaseNum += 1
-            logger.step("运行第 %s 个用例完毕....\n" % (i+1))
+            # runContext.currentCaseNum += 1
+            # logger.step("运行第 %s 个用例完毕....\n" % (i + 1))
 
         self.afterClassTest(context=Context)
 
@@ -226,7 +239,8 @@ class ApiTestSuit(unittest.TestCase):
 
     def checkResult(self, context):
         self.checkResponseCode(context=context)
-        self.checkJson(context=context)
+        self.checkResponseStr(context=context)
+        self.checkDb(context=context)
 
     def checkResponseCode(self, context):
         responseCode = context.getHttpResult().getResponeCode()
@@ -242,8 +256,32 @@ class ApiTestSuit(unittest.TestCase):
         pass
 
     def checkJson(self, context):
-        pass
+        resultJson = context.getHttpResult().getResponeJson()
+        cmpJson = context.getPrepareData().getVerfiyJson()
+        # exchange the str msg to the json
+        if cmpJson is not None:
+            logger.debug("CSV进行Json对比..." + str(cmpJson))
+            jsonUtil = JsonUtil.getInstance()
+            resultJson = jsonUtil.exchangeStrToJson(resultJson)
+            cmpJson = jsonUtil.exchangeStrToJson(cmpJson)
+            result = JsonUtil.comJsonAllReg(resultJson, cmpJson)
+            self.assertTrue(result.getResult(), result.getMsg())
+            logger.debug("Json对比结果：" + result.getMsg())
+        else:
+            logger.debug("CSV文件没有设置json对比，跳过...")
 
+    def checkResponseStr(self, context):
+        logger.debug("准备进行返回值json/str校验....")
+        cmpJson = context.getPrepareData().getVerfiyJson()
+        if not context.httpClient.check_json_format(cmpJson):
+            logger.info("检查josnVerfiy为字符串模式...跳过...")
+            logger.debug("str校验完成...")
+
+        else:
+
+            logger.step("检查jsonVerfiy为json对比模式...")
+            self.checkJson(context=context)
+            logger.step("json校验完成...")
 
 class runContext(object):
     def __init__(self):
@@ -326,6 +364,7 @@ class runContext(object):
 class Context(object):
     def __init__(self, PrepareDataObj, ConfigDataObj):
         self.prepareData = PrepareDataObj
+
         self.configData = ConfigDataObj
         # *************   当前用例的http配置  ****************
         #             Http类型，头部，body，url部分
@@ -347,10 +386,18 @@ class Context(object):
         self.caseId = PrepareDataObj["caseId"]
         # ***
         self.baseUrl = ConfigDataObj["reomveUrl"]
+        #
         self.loginUrl = ConfigDataObj["loginUrl"]
         # ************ 结果返回配置   ******************
         self.httpResult = None
         #
+    def getHttpClient(self):
+        if self.httpClient is None:
+            self.httpClient = http_request()
+        return self.httpClient
+
+    def setHttpClient(self, httpClient):
+        self.httpClient = http_request()
 
     def getPrepareData(self):
         return self.prepareData
@@ -487,10 +534,7 @@ class PrepareData(object):
         # /** 是否需要登录
         self.isNeedLogin = True
         # / **　期望比较的json 对象
-        self.verfiyJson = {
-            "rkey-key1": "rVal-Value1",
-            "key-key1": "Val-Value1"
-        }
+        self.verfiyJson = None
         # key/rkey 代表键对、正则表达式
         # 同理 val/rVal 代表普通对比、正则表达式
 
@@ -628,6 +672,9 @@ class PrepareData(object):
             _prepareData = PrepareDataUtil(csv_file_path)
         else:
             _prepareData = self._prepareDataUtil
+        if self.caseNum == 0:
+            logger.warning("csv数据文件数据为空...")
+            return None
 
         self.setCaseId(_prepareData.getCaseId(index=index))
         self.caseDesc = _prepareData.getCaseDesc(index=index)
