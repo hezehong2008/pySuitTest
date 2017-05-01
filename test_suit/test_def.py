@@ -26,12 +26,15 @@ try:
 
 except:
     import logging
+
 logger = logging.getLogger("ApiTestSuit")
 logger.setLevel(logging.DEBUG)
-STEP = 25 # between INFO and WARN
-
+STEP = 25  # between INFO and WARN
 
 class ApiTestSuit(unittest.TestCase):
+    """
+    """
+    pylogger.setSreamHandler()
 
     def initConfig(self):
         self.step = """
@@ -127,6 +130,7 @@ class ApiTestSuit(unittest.TestCase):
                 result = False
                 logger.warning("TestCase error....")
                 logger.error(traceback.print_exc(Exception))
+                self.assertTrue(result, "Test Result failed...")
             finally:
                 runContext.currentCaseNum += 1
                 logger.step("运行第 %s 个用例完毕....\n" % (i + 1))

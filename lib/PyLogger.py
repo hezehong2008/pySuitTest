@@ -71,7 +71,7 @@ def add_logger_hander(logger, filepath):
     cn.setLevel(LOGGING_LEVEL)
     cn.setFormatter(LOGGING_FORMATTER)
 
-
+# logging.getLogger().handlers = []
 def set_logger_config(logger, filepath):
 
     if not os.path.isfile(filepath):
@@ -94,19 +94,34 @@ def set_logger_config(logger, filepath):
     fh = logging.FileHandler(filepath)
     fh.setLevel(LOGGING_LEVEL)
     fh.setFormatter(formatter)
-    cn = logging.StreamHandler()
-    cn.setLevel(LOGGING_LEVEL)
-    cn.setFormatter(formatter)
+
     # logger.addHandler(fh)
     # logger.addHandler(cn)
     # logger.setp = logger_step
     logging.getLogger().addHandler(fh) # add root hander
+
+    # aa = logging.getLogger().handlers
+
+
+def setSreamHandler():
+    cn = logging.StreamHandler()
+    cn.setLevel(LOGGING_LEVEL)
+    cn.setFormatter(logging.Formatter(LOGGING_FORMATTER))
     logging.getLogger().addHandler(cn)
 
 def logger_step(logger, message, *args, **kws):
     # Yes, logger takes its '*args' as 'args'.
     if logger.isEnabledFor(STEP):
         logger._log(STEP, message, args, **kws)
+
+
+class pyLogger(object):
+    logger = None
+    logger_list = []
+    @classmethod
+    def getLogger(cls, name=None):
+        if pyLogger.logger is None:
+            pass
 # logging.basicConfig(level=logging.DEBUG,
 #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 #                     filename="test.log",
