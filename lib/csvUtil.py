@@ -1,33 +1,41 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
-# >>> import csv
-# >>> with open('eggs.csv', 'rb') as csvfile:
-# ...     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-# ...     for row in spamreader:
-# ...         print ', '.join(row)
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     csvUtil.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to maniputlate the csv file.
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+
+    This module exports a class to manipulate the csv file:
+    class csvutil: manipulate the csv file
+"""
+
 import csv
 import os
 import logging
-# "caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath", "dbInsert.xxx", "paramUrl.xxx", "paramBody.xxx", "paramHeader.xxxx", "verifyReCode", "jsonVerify.xxxx", "dbVerify.xxxx", "dbClean.xxxx"
 
-#　［"caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath"，"verifyReCode"，"dbInsert.xxx", "paramUrl.xxx", "paramBody.xxx", "paramHeader.xxxx", "jsonVerify.xxxx", "dbVerify.xxxx", "dbClean.xxxx"
 GLOBAL_CONFIG_SETTING = {
     "csv_list": ["caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath", "verifyReCode", "paramUrl.xxx",
                     "paramBody.xxx", "paramHeader.xxxx", "jsonVerify.xxxx","dbInsert.xxx", "dbVerify.xxxx", "dbClean.xxxx"],
     "caseId": True,
-    "caseDesc":True,
+    "caseDesc": True,
 
 }
 CSV_BASE_LIST = ["caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath", "verifyReCode",
-                 "paramBody", "verfiyJson",  "paramHeader.xxx", "paramUrl.xxx", "dbInsert", "dbClean"]
+                 "paramBody", "verfiyJson",  "verfiyJsonMode", "paramHeader.xxx", "paramUrl.xxx", "dbInsert", "dbClean"]
 
+verfiyJsonMode = ["KEY", "FULL", "REG"]
 
-CASV_WRITE_DATA = [
+CASV_WRITE_DATA = [ ]
 
-
-]
-# CSV_APPEND_LIST = ["paramUrl.xxx", "paramBody.xxx", "paramHeader.xxxx", "jsonVerify.xxxx",
-#                    "dbInsert.xxx", "dbVerify.xxxx", "dbClean.xxxx"]
 
 CSV_APPEND_LIST = ["paramUrl", "paramHeader", "jsonVerify",
                    "dbInsert", "dbVerify", "dbClean"]
@@ -192,19 +200,19 @@ class csvutil(object):
         if not csv_list:
             csv_list = self.csv_list
         isExit = False
-        if "verifyJson" not in csv_list[0].keys():
+        if "verfiyJson" not in csv_list[0].keys():
             verfiyJsonDict = {}
             for item in csv_list[0].keys():
                 if "verfiyJson" in item.lower():
                     isExit = True
                     verfiyJsonDict[item.split(".")[1]] = csv_list[index][item]
             if not isExit:
-                self.logger.warning("verifyJson Dict param not in csvFile...." + str(csv_list[0].keys()))
+                self.logger.warning("verfiyJson Dict param not in csvFile...." + str(csv_list[0].keys()))
                 return None
             return str(verfiyJsonDict)
             # raise RuntimeWarning("verfiyJson param not in csvFile...." + str(csv_list[0].keys()))
         else:
-            _str = csv_list[index]["verifyJson"]
+            _str = csv_list[index]["verfiyJson"]
             _parent = os.path.dirname(self.csv_path)
             if "@path=" in _str:
                 path = _str.split("@path=")[1]
@@ -326,6 +334,21 @@ class csvutil(object):
     def getHttpSendHeaders(self, csv_list=None, index=0):
         return self.getMapHttpHeadParam(csv_list=csv_list, index=index)
     
+    def getVerifyJsonMode(self, csv_list=None, index=0):
+        """
+
+        :param csv_list:
+        :param index:
+        :return:
+        """
+        if not csv_list:
+            csv_list = self.csv_list
+        if "verfiyJsonMode" not in csv_list[0].keys():
+            return None
+            # raise RuntimeError("verfiyMode param not in csvFile...." + str(csv_list[0].keys()))
+        else:
+            return csv_list[index]["verfiyJsonMode"].upper()
+
 
 def csvReader(filePath):
     """
@@ -346,11 +369,11 @@ def csvWriterBase(filePath, quoting=csv.QUOTE_ALL):
     csvfile.close()
 
 
-
-# csv_list = csvReader("D:\\Users\Administrator\PycharmProjects\\untitled\TestFrame\python_test_frame\interface\\test_case\dds\ApiGetFloorPlan\\testure\ApiGetFloorPlanNormal.csv")
-# print(csv_list)
-
-
+def csvWriterList(filePath, csvlist, quoting=csv.QUOTE_ALL):
+    csvfile = open(filePath, 'w', encoding="utf-8")
+    writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL, dialect="excel")
+    writer.writerow(CSV_BASE_LIST)
+    csvfile.close()
 
 
 # class csvTest(object):

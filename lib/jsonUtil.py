@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     jsonUtil.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to compare the json(dict) obj
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+    This module exports a class to compare the json(dict) obj:
+    class JsonUtil: comparison for the json
+"""
+
 import json
 import re
 import unittest

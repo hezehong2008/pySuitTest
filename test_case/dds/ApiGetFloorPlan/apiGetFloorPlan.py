@@ -36,17 +36,19 @@ class GetFloorPlanTest(ApiTestSuit):
         # context.getHttpSendUrl
         self.logger.debug(context.getHttpSendUrl())
 
-
     def testGetFloorPlan(self):
-        self.logger.info("********************************* Begin test **********************************")
+        self.logger.info("********************************* Begin test ***********************************")
         self.startTest(runContext=self.runContext)
 
     def afterHttpTest(self, context):
         self.logger.info("After HttpTest in this...............")
 
     def tearDown(self):
-        self.logger.info("********************************* End test ************************************")
+        self.logger.info("********************************* End test *************************************")
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(GetFloorPlanTest)
+    test_result = unittest.TextTestRunner(verbosity=2).run(suite)
+    a = 3

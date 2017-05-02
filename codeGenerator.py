@@ -219,6 +219,22 @@ class scriptGenerator(object):
             # fp.write(s)
             fp.close()
 
+    def buidJsonToCsvList(self, json):
+        pass
+
 if __name__ == "__main__":
     generator = scriptGenerator()
     generator.buildScript(serverPath="apiGetFloopPlan", functionName="ApiGetFloorPlan")
+    httpParams = {
+        "loginUrl": "",
+        "httpType": "GET",
+        "url": "http:www.baidu.com//api/dcs/getFloorPlan?&t=3&id=123456",
+        "exceptionCode": 200,
+        "cmpModel": "FULL",  # KEY, FULL, REG
+        "cmpJson": {
+
+            },   # json or str
+        "headers": {
+
+        }
+    }

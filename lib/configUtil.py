@@ -1,5 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     configUtil.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to maniputlate the conf
+#
+# ig file.
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+
+    This module exports a class to manipulate the config file:
+    class configParser: manipulate the config file
+"""
+
 import configparser
 
 
@@ -33,6 +53,6 @@ if __name__ == "__main__":
     print(config.config.get("loginConfig", "remoteUrl"))
     print(config.getConfigByNmae("remoteUrl"))
     print(config.sessions)
-    print(config.__dict__ )
+    print(config.__dict__)
     print(config["remoteUrl"])
     print(config["loginHost"])

@@ -1,4 +1,6 @@
-caseId,caseDesc,isRun,priority,httpType,apiPath,paramUrl.yyy,verifyReCode,jsonVerify.name,verifyJson,paramHeader.request,paramBody.xxxee,paramBody
-No1,ApiGetRoomTypesEncrypted,true,,post,d/api/c/roomtypes?,test_yyy,200,aa,{"name":"test"},test_request,x,@path=postSample.txt
-No1,ApiGetRoomTypesEncrypted3333,true,,post,d/api/c/roomtypes?,defg,200,aa,ffef,1,,
-No1,ApiGetRoomTypesEncrypted3333,true,,post,d/api/c/roomtypes?,,200,,@path=json.txt,,,
+caseId,caseDesc,isRun,priority,httpType,apiPath,paramUrl.yyy,verifyReCode,jsonVerify.name,verfiyJson,paramHeader.request,paramBody.xxxee,paramBody
+No1,ApiGetRoomTypesEncrypted,true,,get,d/api/c/roomtypes?,test_yyy,200,aa,{"name":"test"},test_request,x,@path=postSample.txt
+No1,ApiGetRoomTypesEncrypted3333,true,,get,d/api/c/roomtypes?,defg,200,aa,a,1,,
+No1,ApiGetRoomTypesEncrypted3333,true,,get,d/api/c/roomtypes?,,200,,@path=json.txt,,,
+No1,ApiGetRoomTypesEncrypted3333,true,,get,d/api/c/roomtypes?,,200,,@r=4Iy.+,,,
+No1,ApiGetRoomTypesEncrypted3333,true,,get,d/api/c/roomtypes?,,200,,,,,

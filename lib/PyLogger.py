@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     PyLogger.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to exports the logging message
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+    This module exports a class to modify the logging model
+    class pyLogger: exports the logging message to the stream/file handers...
+"""
+
 import logging
 import os
 import time
@@ -118,10 +135,50 @@ def logger_step(logger, message, *args, **kws):
 class pyLogger(object):
     logger = None
     logger_list = []
+    cn_handers_count = False
+
+
     @classmethod
     def getLogger(cls, name=None):
-        if pyLogger.logger is None:
-            pass
+        if name is None:
+            return logging.getLogger()
+        else:
+            pyLogger.logger_list.append(name)
+            return logging.getLogger(name=name)
+
+    @classmethod
+    def setStreamHander(cls):
+        if not pyLogger.cn_handers_count:
+            cn = logging.StreamHandler()
+            cn.setLevel(LOGGING_LEVEL)
+            cn.setFormatter(logging.Formatter(LOGGING_FORMATTER))
+            logging.getLogger().addHandler(cn)
+            pyLogger.cn_handers_count = True
+
+    @classmethod
+    def set_logger_config(cls, logger, filepath):
+        if not os.path.isfile(filepath):
+            _dir = os.path.dirname(filepath)
+            if os.path.exists(filepath):
+                pass
+            else:
+                if not os.path.exists(os.path.dirname(filepath)):
+                    os.makedirs(os.path.dirname(filepath))
+        # os.makedirs(os.path.dirname(filepath))
+        time.sleep(1)
+        if not os.path.isfile(filepath):
+            logger.warning("The config filepath %s is not exit, then create...." % filepath)
+            # os.makedirs(os.path.dirname(filepath))
+        logging.basicConfig(level=logging.DEBUG,
+                            format=LOGGING_FORMATTER,
+                            filename=filepath,
+                            filemode='w')
+        formatter = logging.Formatter(LOGGING_FORMATTER)
+        fh = logging.FileHandler(filepath)
+        fh.setLevel(LOGGING_LEVEL)
+        fh.setFormatter(formatter)
+
+
 # logging.basicConfig(level=logging.DEBUG,
 #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 #                     filename="test.log",

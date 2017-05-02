@@ -1,36 +1,37 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*
 import unittest
-import sys
-import os
-sys.path.append('../../../test_suit/')
-sys.path.append('../../../lib/')
-from test_def import ApiTestScript
-from test_def import runContext;
-try:
-    from PyLogger import logging
-except:
-    import logging
-
-class GetFloorPlanTest(ApiTestScript):
-
-    def setUp(self):
-        ################################################################################
-        self.script_path = os.getcwd()
-        self.sub_class_name = GetFloorPlanTest.__name__
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.initConfig()
-        ################################################################################
-
-    def testGetFloorPlan(self):
-        print("*********************************")
-        print(self.script_path)
-        self.startTest(runContext=self.runContext)
-        self.logger.info("tttttttttttttttttttttt")
-
-    def tearDown(self):
-        print("clean test..........")
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestStringMethods(unittest.TestCase):
+
+    def test_upper(self):
+        self.assertEqual('foo'.upper(), 'F0O')
+        self.assertEqual('foo'.upper(), 'F0O')
+
+    def test_isupper(self):
+        self.assertTrue('FOO'.isupper())
+        self.assertFalse('Foo'.isupper())
+
+    def test_split(self):
+        s = 'hello world'
+        self.assertEqual(s.split(), ['hello', 'world'])
+        # check that s.split fails when the separator is not a string
+        with self.assertRaises(TypeError):
+            s.split(2)
+
+
+def main():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
+    test_result = unittest.TextTestRunner(verbosity=2).run(suite)
+    print('All case number')
+    print(test_result.testsRun)
+    print('Failed case number')
+    print(len(test_result.failures))
+    print('Failed case and reason')
+    print(test_result.failures)
+    for case, reason in test_result.failures:
+        print(case.id())
+        print(reason)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     httpRequest.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to execute the http method(get/post/head...)
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+    This module exports a class to execute the http method and return the http result
+    class http_request: exports the class tho the
+    class httpResult  : exports the http response result
+"""
+
 import json
 import unittest
 import sys
@@ -14,6 +32,7 @@ except ImportError:
     import urllib.request as urllib2
 # third part of lib
 import requests
+
 try:
     from PyLogger import logging
 except Exception:
@@ -23,6 +42,8 @@ logger = logging.getLogger("httpRequest")
 
 
 SET_TIME_OUT = 60
+
+
 class http_request(object):
 
     def __init__(self, loginUrl=None, username=None, password=None, **kwargs):
@@ -200,6 +221,7 @@ class http_request(object):
         :param self:
         :return:
         """
+
         if isinstance(raw_msg, str):  # 首先判断变量是否为字符串
             try:
                 json.loads(raw_msg, encoding='utf-8')
@@ -273,6 +295,7 @@ class httpResult(object):
         :param self:
         :return:
         """
+
         if isinstance(raw_msg, str):  # 首先判断变量是否为字符串
             try:
                 json.loads(raw_msg, encoding='utf-8')
@@ -407,6 +430,8 @@ if __name__ == "__main__":
     print(len(test_result.failures))
     print('Failed case and reason')
     print(test_result.failures)
+    a = json.loads('''{"name":"name"}''')
+
     for case, reason in test_result.failures:
         print
         case.id()

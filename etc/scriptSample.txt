@@ -38,7 +38,7 @@ class {exApiClassName}(ApiTestSuit):
                     self.logger.info("before HttpTest in this..............")
         :return:
         """
-        self.logger.info("Begin Test Method....")
+        self.logger.info("#########################　Begin Test Method　#####################################")
         self.startTest(runContext=self.runContext)
 
     def beforeHttpTest(self, context):
@@ -70,7 +70,7 @@ class {exApiClassName}(ApiTestSuit):
             脚本执行后函数
             :return:
         """
-        self.logger.info("Clean Test....")
+        self.logger.info("#################################　End Test　######################################")
 
 
 if __name__ == "__main__":

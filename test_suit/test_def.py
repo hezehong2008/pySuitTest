@@ -1,12 +1,42 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
 
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     test_def.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to manage the test procedure
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
+"""Module for pySuit frame
+    class ApiTestSuit: exports to manage the test procedure
+                runContext ---
+                        configData(global)
+                        prepareDataList(list obj for prepareData)
+                        currentContext(Context obj) ---
+                                                        prepareData
+                                                        httpResult
+                                                        configData
+                                                        httpClient
+                        httpResultList(list obj for httpResult)
+    class runContext : the global context for the procedure
+    class Context    : the running context for the procedure
+    class ConfigData : the config obj for the runContext
+    class PrepareData: the csv prepare data for the context
+    class HttpMethod : enum for http method
+"""
+
 import unittest
 import sys
 import time
 import os
 import traceback
 import copy
+import urllib
 from enum import Enum
 sys.path.append("..")
 try:
@@ -19,22 +49,20 @@ except ImportError:
     from httplib.httpRequest import http_request
     from lib.csvUtil import csvutil as PrepareDataUtil
     from lib.configUtil import configParser
-# from httpRequest import http_request
 try:
-    import lib.PyLogger as pylogger
+    from lib.PyLogger import pyLogger as pylogger
     from lib.PyLogger import logging
-
-except:
+except ImportError:
     import logging
 
-logger = logging.getLogger("ApiTestSuit")
+logger = pylogger.getLogger("ApiTestSuit")
 logger.setLevel(logging.DEBUG)
 STEP = 25  # between INFO and WARN
+
 
 class ApiTestSuit(unittest.TestCase):
     """
     """
-    pylogger.setSreamHandler()
 
     def initConfig(self):
         self.step = """
@@ -65,6 +93,7 @@ class ApiTestSuit(unittest.TestCase):
                         httpResultList(list obj for httpResult)
         """
         self.setLogger()
+        # pylogger.setSreamHandler()
         logger.step(self.step)
         logger.step("初始化上下文对象....")
         logger.debug("创建全局runContext对象.....")
@@ -147,7 +176,6 @@ class ApiTestSuit(unittest.TestCase):
             # logger.step("运行第 %s 个用例完毕....\n" % (i + 1))
 
         self.afterClassTest(context=Context)
-
         self.assertTrue(result, "Test Result ....")
 
     def beforeHttpTest(self, context):
@@ -190,6 +218,7 @@ class ApiTestSuit(unittest.TestCase):
         httpType = context.getHttpType()
 
         url = context.getBaseUrl() + context.getHttpSendUrl()
+
         if httpType is None or httpType == "":
             logger.warning("httpType is none")
             httpType = HttpMethod.GET
@@ -232,6 +261,7 @@ class ApiTestSuit(unittest.TestCase):
         self.log_file = os.path.abspath(log_)
         log_file = os.path.join(os.getcwd(), log_)
         pylogger.set_logger_config(logger=logger, filepath=self.log_file)
+        pylogger.setStreamHander()
 
     def logger_step(self, message, *args, **kws):
         # Yes, logger takes its '*args' as 'args'.
@@ -243,7 +273,10 @@ class ApiTestSuit(unittest.TestCase):
 
     def checkResult(self, context):
         self.checkResponseCode(context=context)
-        self.checkResponseStr(context=context)
+        verfiyJson = context.getPrepareData().getVerfiyJson()
+        if verfiyJson:
+            logger.step("csv文件 verFiyJson 不为空... %s, 校验返回结果" % str(verfiyJson))
+            self.checkResponseMsg(context=context)
         self.checkDb(context=context)
 
     def checkResponseCode(self, context):
@@ -259,7 +292,7 @@ class ApiTestSuit(unittest.TestCase):
     def checkDb(self, context):
         pass
 
-    def checkJson(self, context):
+    def checkResponseJson(self, context):
         resultJson = context.getHttpResult().getResponeJson()
         cmpJson = context.getPrepareData().getVerfiyJson()
         # exchange the str msg to the json
@@ -274,18 +307,43 @@ class ApiTestSuit(unittest.TestCase):
         else:
             logger.debug("CSV文件没有设置json对比，跳过...")
 
-    def checkResponseStr(self, context):
+    def checkResponseMsg(self, context):
         logger.debug("准备进行返回值json/str校验....")
         cmpJson = context.getPrepareData().getVerfiyJson()
+        responseMsg = context.getHttpResult().getResponeMsg()
         if not context.httpClient.check_json_format(cmpJson):
-            logger.info("检查josnVerfiy为字符串模式...跳过...")
+            logger.info("检查josnVerfiy为字符串模式...")
+            self.checkResponseStr(context=context)
             logger.debug("str校验完成...")
 
-        else:
-
+        elif context.httpClient.check_json_format(cmpJson) and context.httpClient.check_json_format(responseMsg):
             logger.step("检查jsonVerfiy为json对比模式...")
-            self.checkJson(context=context)
+            self.checkResponseJson(context=context)
             logger.step("json校验完成...")
+        else:
+            logger.error("返回值和准备数据....格式不一致,退出校验...")
+
+    def checkResponseStr(self, context):
+        logger.debug("进行字符串模式对比....")
+        cmpJson = context.getPrepareData().getVerfiyJson()
+        responseMsg = context.getHttpResult().getResponeMsg()
+        reg = cmpJson
+        if "@r=" in cmpJson:
+            reg = cmpJson.split("@r=")[1]
+            msg = "对比失败， %s 不在返回值中， %s" % (str(cmpJson), str(responseMsg))
+            self.assertRegex(responseMsg, reg, msg=msg)
+            logger.info("对比成功， %s 在返回值中， %s" % (str(reg), str(responseMsg)))
+        else:
+            msg = "对比失败， %s 不在返回值中， %s" % (str(cmpJson), str(responseMsg))
+            self.assertRegex(responseMsg, reg, msg=msg)
+            logger.info("对比成功， %s 在返回值中， %s" % (str(reg), str(responseMsg)))
+
+
+
+    def generatorTestResult(self, path, classname):
+        pass
+        # self.
+
 
 class runContext(object):
     def __init__(self):
@@ -366,6 +424,11 @@ class runContext(object):
 
 
 class Context(object):
+    """
+        一个用例可以认为是一行csv数据，
+        Context代表一个用例运行的上下文，
+        一个脚本可以包含多个用例
+    """
     def __init__(self, PrepareDataObj, ConfigDataObj):
         self.prepareData = PrepareDataObj
 
@@ -394,7 +457,7 @@ class Context(object):
         self.loginUrl = ConfigDataObj["loginUrl"]
         # ************ 结果返回配置   ******************
         self.httpResult = None
-        #
+
     def getHttpClient(self):
         if self.httpClient is None:
             self.httpClient = http_request()
@@ -466,7 +529,7 @@ class ConfigData(object):
         if not os.path.isfile(self.configPath):
             raise RuntimeError("配置文件路径错误..." + self.configPath)
         _parse = self.configParase
-        self.loginUrl =  _parse["loginHost"]
+        self.loginUrl = _parse["loginHost"]
         self.reomveUrl = _parse["remoteUrl"]
         self.dbUrl = _parse["db_url"]
         self.dbUsername = _parse["db_username"]
@@ -507,6 +570,9 @@ class ConfigData(object):
 
     def __str__(self):
         return str(self.__dict__)
+
+    def getConfig(self, section, name):
+        return self.configParase.getSectionByName(section=section, name=name)
 
 
 class PrepareData(object):
@@ -564,7 +630,7 @@ class PrepareData(object):
         self._prepareDataUtil = PrepareDataUtil(csv_file_path)
         self.caseNum = len(self._prepareDataUtil.csv_list)
         self.initParam(csv_file_path=csv_file_path, index=index)
-     # ***************************  not finish ***************************************
+        # ***************************  not finish ***************************************
 
     def getExceptRetCode(self):
         return self.exceptRetCode
@@ -773,18 +839,4 @@ class HttpMethod(Enum):
 
 
 if __name__ == "__main__":
-    context = runContext()
-    print(type(HttpMethod.POST), str(HttpMethod.POST.name))
-    print(HttpMethod.POST.value)
-    # context["baseUrl"] = "aaa"
-    # file_path = "D:\\Users\Administrator\PycharmProjects\\untitled\TestFrame\python_test_frame\interface\\test_case\dds\ApiGetFloorPlan\\testure\ApiGetFloorPlanNormal.csv"
-    # pare = PrepareData(csv_file_path=file_path, index=0)
-    # print(pare.getCaseDesc())
-    # print(pare.getCaseDesc())
-    # print(pare.setCaseDesc("test"))
-    # print(pare.getCaseDesc())
-    # print(ConfigData)
-
-    # print(pare.getCaseDesc3())
-    # print(context["caseId"])
     pass
