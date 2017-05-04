@@ -338,11 +338,21 @@ class ApiTestSuit(unittest.TestCase):
             self.assertRegex(responseMsg, reg, msg=msg)
             logger.info("对比成功， %s 在返回值中， %s" % (str(reg), str(responseMsg)))
 
-
-
     def generatorTestResult(self, path, classname):
         pass
         # self.
+
+    def regist_func(self, func, **kwargs):
+        pass
+
+    def Run(self):
+
+        pass
+
+
+class ApiTestSuitRunner(object):
+
+    pass
 
 
 class runContext(object):

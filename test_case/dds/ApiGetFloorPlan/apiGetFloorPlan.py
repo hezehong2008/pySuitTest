@@ -23,6 +23,7 @@ class GetFloorPlanTest(ApiTestSuit):
         self.config_path = r'''../config.properties'''
         self.logger = logging.getLogger(self.__class__.__name__)
         self.initConfig()
+        self.regist_func(self.testGetFloorPlan)
         ################################################################################
 
     def beforeHttpTest(self, context):
@@ -30,7 +31,6 @@ class GetFloorPlanTest(ApiTestSuit):
         """
         :param context:
         :return:
-
         """
         self.logger.info("before HttpTest in this..............")
         # context.getHttpSendUrl

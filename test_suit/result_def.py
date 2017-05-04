@@ -18,6 +18,7 @@ class TestResult(object):
         self.comment = comment
         self.result = result
         self.detail = detail
+        self.result_list = []
 
     def setResult(self, result):
         self.result = result
@@ -40,3 +41,6 @@ class TestResult(object):
     @classmethod
     def getTestResult(cls, result, comment=None, detail=None):
         return TestResult(result=result, comment=comment, detail=detail)
+
+    def addResult(self, result, comment=None, detail=None):
+        self.result_list.append(result)

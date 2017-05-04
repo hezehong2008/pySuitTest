@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*
+
+###############################################################################
+# Copyright (C), 2017 heZehong
+#
+# Filename:     codeGenerator.py
+# Version:      1.0.0
+# Description:  Module for pySuit frame to generate the test case、csv file and config file
+# Author:       he zehong
+# History:
+#   1. 2017-04-25  he zehong, first create
+###############################################################################
+
 import lib.csvUtil as csvutil
+from lib.urlParseUtil import urlUtil
 import logging
 import os
 import platform
@@ -219,12 +232,27 @@ class scriptGenerator(object):
             # fp.write(s)
             fp.close()
 
-    def buidJsonToCsvList(self, json):
-        pass
+    def buidJsonToCsvListWithGet(self, json):
+        url = json["url"]
+        CSV_BASE_LIST = ["caseId", "caseDesc", "isRun", "priority", "httpType", "apiPath", "verifyReCode",
+                         "paramBody", "verfiyJson", "verfiyJsonMode", "paramHeader.xxx", "paramUrl.xxx", "dbInsert",
+                         "dbClean"]
+        quotes = urlUtil.getInstance().getQuoteFromUrl(url)
+        apiPath = urlUtil.getInstance().getApitPathFromUrl(url)
+        url_dict = {}
+        for item in quotes.keys():
+            values = quotes[item]
+            for _item in values:
+                if len(values) != 1:
+                    raise RuntimeError("url quote param len must be 1")
+                urlParam = "paramUrl." + item
+            url_dict[item] = values[0]
+        a = 3
 
 if __name__ == "__main__":
     generator = scriptGenerator()
-    generator.buildScript(serverPath="apiGetFloopPlan", functionName="ApiGetFloorPlan")
+    generator.buildScript(serverPath="dcs/apiGetFloopPlan2", functionName="ApiGetFloorPlan2")
+
     httpParams = {
         "loginUrl": "",
         "httpType": "GET",
@@ -238,3 +266,4 @@ if __name__ == "__main__":
 
         }
     }
+    generator.buidJsonToCsvListWithGet(json=httpParams)

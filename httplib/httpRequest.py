@@ -92,6 +92,7 @@ class http_request(object):
         result.setResponeMsg(respone.text)
         result.setCookieJar(respone.cookies)
         result.setResponeCode(respone.status_code)
+        logger.debug("requestPost response...url: %s , entity: %s" % (url, result.getResponeMsg()))
         return result
         # result.setResponeCode(responeCode=response.code)
         # print(type(response.headers))
@@ -124,6 +125,7 @@ class http_request(object):
         result.setResponeMsg(respone.text)
         result.setCookieJar(respone.cookies)
         result.setResponeCode(respone.status_code)
+        logger.debug("requestGet response...url: %s , body %s" % (url, result.getResponeMsg()))
         return result
         # logger.debug("Exec http post method...header %s, entity %s" %(unicode(headers), entity))
         # request = urllib2.Request(url, headers=headers, data=entity)
